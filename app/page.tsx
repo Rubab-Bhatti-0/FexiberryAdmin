@@ -10,8 +10,8 @@ const PAGES = {
   SHOPS: 'shops',
   ADMINS: 'admins',
   USERS: 'users',
-  USER_VERIFICATION: 'user_verification',
-  VENDOR_VERIFICATION: 'vendor_verification',
+  BUYER_KYC: 'buyer_kyc',
+  VENDOR_KYC: 'vendor_kyc',
   CATEGORIES: 'categories',
   INSTALLMENTS: 'installments',
   RECOVERY: 'recovery',
@@ -156,9 +156,15 @@ export default function Dashboard() {
         { id: PAGES.INSTALLMENTS, label: 'Installments', icon: <FileText size={18} /> },
         { id: PAGES.USERS, label: 'Buyers', icon: <Users size={18} /> },
         { id: PAGES.ANALYTICS, label: 'Analytics', icon: <Activity size={18} /> },
-        { id: PAGES.USER_VERIFICATION, label: 'KYC', icon: <ShieldCheck size={18} />, badge: 2 },
         { id: PAGES.CONTACT_MESSAGES, label: 'Messages', icon: <MessageSquare size={18} />, badge: contactMessages.filter(m => m.status === 'unread').length },
         { id: PAGES.SETTINGS, label: 'Settings', icon: <Activity size={18} /> },
+      ],
+    },
+    {
+      title: 'KYC VERIFICATION',
+      items: [
+        { id: PAGES.BUYER_KYC, label: 'Buyer KYC', icon: <ShieldCheck size={18} />, badge: userVerifications.filter(v => v.status === 'pending').length },
+        { id: PAGES.VENDOR_KYC, label: 'Vendor KYC', icon: <ShieldCheck size={18} />, badge: vendorVerifications.filter(v => v.status === 'pending').length },
       ],
     },
   ]
@@ -436,7 +442,7 @@ export default function Dashboard() {
                         <ShoppingBag size={20} />
                         <span className="text-[10px] font-bold">Add Product</span>
                       </button>
-                      <button className="p-4 rounded-2xl bg-gradient-to-br from-purple-600 to-purple-700 text-white flex flex-col items-center justify-center gap-2 hover:shadow-lg hover:shadow-purple-500/20 transition-all">
+                      <button onClick={() => setCurrentPage(PAGES.BUYER_KYC)} className="p-4 rounded-2xl bg-gradient-to-br from-purple-600 to-purple-700 text-white flex flex-col items-center justify-center gap-2 hover:shadow-lg hover:shadow-purple-500/20 transition-all">
                         <ShieldCheck size={20} />
                         <span className="text-[10px] font-bold">Review KYC</span>
                       </button>
@@ -763,8 +769,234 @@ export default function Dashboard() {
             </div>
           )}
 
+          {/* Buyer KYC Page */}
+          {currentPage === PAGES.BUYER_KYC && (
+            <div className="space-y-8">
+              <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+                <div>
+                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Buyer KYC Verification</h1>
+                  <p className="text-xs text-gray-400 mt-1">Review and manage buyer identity verification documents</p>
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="relative flex-1 md:flex-none">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                    <input 
+                      type="text" 
+                      placeholder="Search buyers..." 
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl pl-10 pr-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500 w-full md:w-64" 
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="glass-card rounded-3xl overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-gray-100 dark:border-gray-800">
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Buyer Name</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Email</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Documents</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Submission Date</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Status</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50 dark:divide-gray-800/50">
+                      {userVerifications
+                        .filter(v => 
+                          v.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          v.email.toLowerCase().includes(searchTerm.toLowerCase())
+                        )
+                        .map((verification) => (
+                        <tr key={verification.id} className={`hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors ${verification.status === 'pending' ? 'bg-amber-50/30 dark:bg-amber-500/5' : ''}`}>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-[10px] font-bold">
+                                {verification.name.charAt(0)}
+                              </div>
+                              <div className="text-[11px] font-bold text-gray-900 dark:text-white">{verification.name}</div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-[11px] text-gray-500 dark:text-gray-400">{verification.email}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-[10px] text-gray-600 dark:text-gray-300">
+                              {verification.docs.map((doc, i) => (
+                                <div key={i} className="text-[9px] text-gray-500 dark:text-gray-400">• {doc}</div>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-[11px] text-gray-500 dark:text-gray-400">{verification.date}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded-lg text-[9px] font-bold ${
+                              verification.status === 'approved' 
+                                ? 'bg-green-100 text-green-600 dark:bg-green-500/10' 
+                                : verification.status === 'pending'
+                                ? 'bg-amber-100 text-amber-600 dark:bg-amber-500/10'
+                                : 'bg-red-100 text-red-600 dark:bg-red-500/10'
+                            }`}>
+                              {verification.status.toUpperCase()}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center justify-end gap-2">
+                              <button 
+                                onClick={() => setViewDocModal({ open: true, item: verification, type: 'user' })}
+                                className="p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-500/10 text-blue-600 transition-all"
+                                title="View Documents"
+                              >
+                                <Eye size={14} />
+                              </button>
+                              {verification.status === 'pending' && (
+                                <>
+                                  <button 
+                                    onClick={() => setUserVerifications(userVerifications.map(v => v.id === verification.id ? { ...v, status: 'approved' } : v))}
+                                    className="p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-500/10 text-green-600 transition-all"
+                                    title="Approve"
+                                  >
+                                    <Check size={14} />
+                                  </button>
+                                  <button 
+                                    onClick={() => setUserVerifications(userVerifications.map(v => v.id === verification.id ? { ...v, status: 'rejected' } : v))}
+                                    className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-red-600 transition-all"
+                                    title="Reject"
+                                  >
+                                    <XCircle size={14} />
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Vendor KYC Page */}
+          {currentPage === PAGES.VENDOR_KYC && (
+            <div className="space-y-8">
+              <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+                <div>
+                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Vendor KYC Verification</h1>
+                  <p className="text-xs text-gray-400 mt-1">Review and manage vendor business verification documents</p>
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="relative flex-1 md:flex-none">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                    <input 
+                      type="text" 
+                      placeholder="Search vendors..." 
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl pl-10 pr-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500 w-full md:w-64" 
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="glass-card rounded-3xl overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-gray-100 dark:border-gray-800">
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Shop Name</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Owner</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Documents</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Submission Date</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Status</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50 dark:divide-gray-800/50">
+                      {vendorVerifications
+                        .filter(v => 
+                          v.shopName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          v.owner.toLowerCase().includes(searchTerm.toLowerCase())
+                        )
+                        .map((verification) => (
+                        <tr key={verification.id} className={`hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors ${verification.status === 'pending' ? 'bg-amber-50/30 dark:bg-amber-500/5' : ''}`}>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-[10px] font-bold">
+                                {verification.shopName.charAt(0)}
+                              </div>
+                              <div className="text-[11px] font-bold text-gray-900 dark:text-white">{verification.shopName}</div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-[11px] text-gray-500 dark:text-gray-400">{verification.owner}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-[10px] text-gray-600 dark:text-gray-300">
+                              {verification.docs.map((doc, i) => (
+                                <div key={i} className="text-[9px] text-gray-500 dark:text-gray-400">• {doc}</div>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-[11px] text-gray-500 dark:text-gray-400">{verification.date}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded-lg text-[9px] font-bold ${
+                              verification.status === 'approved' 
+                                ? 'bg-green-100 text-green-600 dark:bg-green-500/10' 
+                                : verification.status === 'pending'
+                                ? 'bg-amber-100 text-amber-600 dark:bg-amber-500/10'
+                                : 'bg-red-100 text-red-600 dark:bg-red-500/10'
+                            }`}>
+                              {verification.status.toUpperCase()}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center justify-end gap-2">
+                              <button 
+                                onClick={() => setViewDocModal({ open: true, item: verification, type: 'vendor' })}
+                                className="p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-500/10 text-blue-600 transition-all"
+                                title="View Documents"
+                              >
+                                <Eye size={14} />
+                              </button>
+                              {verification.status === 'pending' && (
+                                <>
+                                  <button 
+                                    onClick={() => setVendorVerifications(vendorVerifications.map(v => v.id === verification.id ? { ...v, status: 'approved' } : v))}
+                                    className="p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-500/10 text-green-600 transition-all"
+                                    title="Approve"
+                                  >
+                                    <Check size={14} />
+                                  </button>
+                                  <button 
+                                    onClick={() => setVendorVerifications(vendorVerifications.map(v => v.id === verification.id ? { ...v, status: 'rejected' } : v))}
+                                    className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-red-600 transition-all"
+                                    title="Reject"
+                                  >
+                                    <XCircle size={14} />
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Other pages would go here, following the same pattern */}
-          {currentPage !== PAGES.DASHBOARD && currentPage !== PAGES.ANALYTICS && currentPage !== PAGES.CONTACT_MESSAGES && (
+          {currentPage !== PAGES.DASHBOARD && currentPage !== PAGES.ANALYTICS && currentPage !== PAGES.CONTACT_MESSAGES && currentPage !== PAGES.BUYER_KYC && currentPage !== PAGES.VENDOR_KYC && (
             <div className="glass-card p-6 md:p-12 rounded-3xl min-h-[400px] md:min-h-[600px] flex flex-col items-center justify-center text-center">
               <div className="w-16 h-16 md:w-20 md:h-20 rounded-3xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 mb-6">
                 <Activity size={32} className="md:size-10" />
