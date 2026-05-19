@@ -1,6 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { 
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+  BarChart, Bar, PieChart as RePieChart, Pie, Cell, LineChart, Line, Legend
+} from 'recharts'
 import { Menu, X, Moon, Sun, LogOut, Bell, Search, Plus, Edit2, Trash2, Eye, ChevronLeft, ChevronRight, Download, FileText, Check, AlertCircle, Lock, User, Mail, ShieldCheck, ShoppingBag, Pause, Play, Save, XCircle, TrendingUp, BarChart3, Users, ShoppingCart, DollarSign, Activity, RefreshCw, Zap, PieChart, Calendar, MessageSquare, Star } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { Logo } from '@/components/logo'
@@ -219,6 +224,75 @@ export default function Dashboard() {
     },
   ]
 
+  // Reusable Chart Components
+  const RevenueChart = ({ data }: { data: any[] }) => (
+    <ResponsiveContainer width="100%" height={300}>
+      <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+        <defs>
+          <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="#2563eb" stopOpacity={0.3}/>
+            <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
+          </linearGradient>
+          <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.3}/>
+            <stop offset="95%" stopColor="#7c3aed" stopOpacity={0}/>
+          </linearGradient>
+        </defs>
+        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme === 'dark' ? '#1e293b' : '#f1f5f9'} />
+        <XAxis 
+          dataKey="name" 
+          axisLine={false} 
+          tickLine={false} 
+          tick={{ fontSize: 10, fill: '#94a3b8' }} 
+          dy={10}
+        />
+        <YAxis 
+          axisLine={false} 
+          tickLine={false} 
+          tick={{ fontSize: 10, fill: '#94a3b8' }} 
+        />
+        <Tooltip 
+          contentStyle={{ 
+            backgroundColor: theme === 'dark' ? '#0f172a' : '#ffffff', 
+            border: 'none', 
+            borderRadius: '12px',
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+          }}
+          itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+        />
+        <Area type="monotone" dataKey="revenue" stroke="#2563eb" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
+        <Area type="monotone" dataKey="profit" stroke="#7c3aed" strokeWidth={3} fillOpacity={1} fill="url(#colorProfit)" />
+      </AreaChart>
+    </ResponsiveContainer>
+  )
+
+  const DevicePieChart = ({ data }: { data: any[] }) => (
+    <ResponsiveContainer width="100%" height={200}>
+      <RePieChart>
+        <Pie
+          data={data}
+          cx="50%"
+          cy="50%"
+          innerRadius={60}
+          outerRadius={80}
+          paddingAngle={5}
+          dataKey="value"
+        >
+          {data.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={entry.color} />
+          ))}
+        </Pie>
+        <Tooltip 
+          contentStyle={{ 
+            backgroundColor: theme === 'dark' ? '#0f172a' : '#ffffff', 
+            border: 'none', 
+            borderRadius: '12px'
+          }}
+        />
+      </RePieChart>
+    </ResponsiveContainer>
+  )
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
     if (loginEmail && loginPassword) {
@@ -286,9 +360,9 @@ export default function Dashboard() {
         
         <div className="px-4 py-4 mb-2">
           <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-3 relative z-10">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/20">TZ</div>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/20">FA</div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-bold text-white truncate">TechZone</div>
+              <div className="text-sm font-bold text-white truncate">FlexiBerry Admin</div>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
                 <span className="text-[10px] text-green-500 font-bold">Active · Verified</span>
@@ -352,7 +426,7 @@ export default function Dashboard() {
             </button>
             <div className="flex items-center gap-2 text-[11px] font-bold text-gray-400">
               <ShoppingBag size={14} />
-              <span>TechZone</span>
+              <span>FlexiBerry</span>
               <ChevronRight size={12} />
               <span className="text-gray-900 dark:text-white capitalize">{currentPage.replace('_', ' ')}</span>
             </div>
@@ -368,11 +442,19 @@ export default function Dashboard() {
             <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="p-2 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-blue-600 transition-all border border-gray-100 dark:border-gray-700">
               {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
             </button>
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white text-xs font-bold shadow-md shadow-blue-500/20 shrink-0">TZ</div>
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white text-xs font-bold shadow-md shadow-blue-500/20 shrink-0">FA</div>
           </div>
         </header>
 
         <div className="p-4 md:p-8">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentPage}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+            >
           {/* Dashboard */}
           {currentPage === PAGES.DASHBOARD && (
             <div className="space-y-8">
@@ -382,7 +464,7 @@ export default function Dashboard() {
                     <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
                     Live Dashboard
                   </div>
-                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Good morning, TechZone 👋</h1>
+                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Welcome back, Admin 👋</h1>
                   <p className="text-xs text-gray-400 mt-1">Friday, March 13, 2026 · Here's your store overview</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
@@ -403,7 +485,13 @@ export default function Dashboard() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {statCards.map((card, i) => (
-                  <div key={i} className={`p-6 rounded-3xl ${card.bgColor} relative overflow-hidden group hover:scale-[1.02] transition-all cursor-default shadow-sm border border-black/5`}>
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    key={i} 
+                    className={`p-6 rounded-3xl ${card.bgColor} relative overflow-hidden group hover:scale-[1.02] transition-all cursor-default shadow-sm border border-black/5`}
+                  >
                     <div className="flex justify-between items-start mb-4">
                       <div className={`w-12 h-12 rounded-2xl bg-white/80 dark:bg-black/20 flex items-center justify-center shadow-sm`}>
                         {card.icon}
@@ -426,7 +514,7 @@ export default function Dashboard() {
                         </svg>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
 
@@ -450,16 +538,14 @@ export default function Dashboard() {
                     </div>
                   </div>
                   
-                  <div className="h-64 flex items-end justify-between gap-1.5 md:gap-4 px-1 md:px-2">
-                    {analyticsData.salesTrend.map((val, i) => (
-                      <div key={i} className="flex-1 flex flex-col items-center gap-3 group">
-                        <div className="w-full relative flex items-end justify-center gap-0.5 md:gap-1 h-48">
-                          <div className="w-full bg-blue-100 dark:bg-blue-900/20 rounded-t-lg transition-all group-hover:bg-blue-200 dark:group-hover:bg-blue-900/40" style={{ height: `${analyticsData.lastWeekSales[i]}%` }}></div>
-                          <div className="w-full bg-blue-600 rounded-t-lg transition-all group-hover:bg-blue-700 shadow-lg shadow-blue-500/20" style={{ height: `${val}%` }}></div>
-                        </div>
-                        <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-wider">{['M', 'T', 'W', 'T', 'F', 'S', 'S'][i]}</span>
-                      </div>
-                    ))}
+                  <div className="h-64 px-1 md:px-2">
+                    <RevenueChart 
+                      data={analyticsData.salesTrend.map((val, i) => ({
+                        name: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i],
+                        revenue: val,
+                        profit: analyticsData.lastWeekSales[i]
+                      }))} 
+                    />
                   </div>
 
                   <div className="mt-8 pt-6 border-t border-gray-50 dark:border-gray-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -857,16 +943,14 @@ export default function Dashboard() {
                           </div>
                         </div>
                       </div>
-                    <div className="h-48 md:h-72 flex items-end justify-between gap-1 md:gap-2">
-                      {[40, 55, 45, 70, 60, 85, 75, 90, 80, 95, 85, 100].map((val, i) => (
-                        <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
-                          <div className="w-full relative flex items-end justify-center gap-0.5 h-32 md:h-56">
-                            <div className="w-full bg-purple-100 dark:bg-purple-900/20 rounded-t-md transition-all group-hover:bg-purple-200" style={{ height: `${val * 0.6}%` }}></div>
-                            <div className="w-full bg-blue-600 rounded-t-md transition-all group-hover:bg-blue-700" style={{ height: `${val}%` }}></div>
-                          </div>
-                          <span className="text-[8px] md:text-[9px] font-bold text-gray-400">{'JFMAMJJASOND'[i]}</span>
-                        </div>
-                      ))}
+                    <div className="h-72">
+                      <RevenueChart 
+                        data={[40, 55, 45, 70, 60, 85, 75, 90, 80, 95, 85, 100].map((val, i) => ({
+                          name: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i],
+                          revenue: val,
+                          profit: val * 0.7
+                        }))}
+                      />
                     </div>
                   </div>
 
@@ -895,19 +979,14 @@ export default function Dashboard() {
                     </div>
                     <div className="glass-card p-6 rounded-3xl">
                       <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-6">Device Usage</h3>
-                      <div className="flex items-center justify-center h-32">
-                        <div className="relative w-32 h-32">
-                          <svg className="w-full h-full" viewBox="0 0 36 36">
-                            <circle cx="18" cy="18" r="16" fill="none" className="stroke-gray-100 dark:stroke-gray-800" strokeWidth="4"></circle>
-                            <circle cx="18" cy="18" r="16" fill="none" className="stroke-blue-500" strokeWidth="4" strokeDasharray="60 100" strokeDashoffset="0"></circle>
-                            <circle cx="18" cy="18" r="16" fill="none" className="stroke-purple-500" strokeWidth="4" strokeDasharray="30 100" strokeDashoffset="-60"></circle>
-                            <circle cx="18" cy="18" r="16" fill="none" className="stroke-amber-500" strokeWidth="4" strokeDasharray="10 100" strokeDashoffset="-90"></circle>
-                          </svg>
-                          <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="text-xs font-bold text-gray-900 dark:text-white">8.4k</span>
-                            <span className="text-[8px] text-gray-400">Total</span>
-                          </div>
-                        </div>
+                      <div className="h-40">
+                        <DevicePieChart 
+                          data={[
+                            { name: 'Mobile', value: 60, color: '#2563eb' },
+                            { name: 'Desktop', value: 30, color: '#7c3aed' },
+                            { name: 'Tablet', value: 10, color: '#fbbf24' },
+                          ]}
+                        />
                       </div>
                       <div className="mt-4 grid grid-cols-3 gap-2">
                         <div className="text-center">
@@ -2413,6 +2492,10 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+          </motion.div>
+          </AnimatePresence>
+        </div>
+      </main>
     </div>
   )
 }
