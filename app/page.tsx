@@ -1,13 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Menu, X, Moon, Sun, LogOut, Bell, Search, Plus, Edit2, Trash2, Eye, ChevronLeft, ChevronRight, Download, FileText, Check, AlertCircle, Lock, User, Mail, ShieldCheck, ShoppingBag, Pause, Play, Save, XCircle, TrendingUp, BarChart3, Users, ShoppingCart, DollarSign, Activity, RefreshCw, Zap, PieChart, Calendar, MessageSquare } from 'lucide-react'
+import { Menu, X, Moon, Sun, LogOut, Bell, Search, Plus, Edit2, Trash2, Eye, ChevronLeft, ChevronRight, Download, FileText, Check, AlertCircle, Lock, User, Mail, ShieldCheck, ShoppingBag, Pause, Play, Save, XCircle, TrendingUp, BarChart3, Users, ShoppingCart, DollarSign, Activity, RefreshCw, Zap, PieChart, Calendar, MessageSquare, Star } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { Logo } from '@/components/logo'
 
 const PAGES = {
   DASHBOARD: 'dashboard',
   SHOPS: 'shops',
+  PRODUCTS: 'products',
+  ORDERS: 'orders',
   ADMINS: 'admins',
   USERS: 'users',
   BUYER_KYC: 'buyer_kyc',
@@ -44,12 +46,18 @@ export default function Dashboard() {
   const [showEditAdminModal, setShowEditAdminModal] = useState<any>(null)
   const [showEditUserModal, setShowEditUserModal] = useState<any>(null)
   const [viewDocModal, setViewDocModal] = useState<{ open: boolean, item: any | null, type: 'user' | 'vendor' }>({ open: false, item: null, type: 'user' })
+  const [showAddProductModal, setShowAddProductModal] = useState(false)
+  const [showEditProductModal, setShowEditProductModal] = useState<any>(null)
+  const [showAddOrderModal, setShowAddOrderModal] = useState(false)
+  const [showOrderDetailsModal, setShowOrderDetailsModal] = useState<any>(null)
 
   // Form states
   const [newShop, setNewShop] = useState({ name: '', owner: '', revenue: '', status: 'active' })
   const [newAdmin, setNewAdmin] = useState({ name: '', email: '', role: 'Admin' })
   const [newUser, setNewUser] = useState({ name: '', email: '', phone: '', status: 'active' })
   const [newCategory, setNewCategory] = useState({ name: '', icon: '' })
+  const [newProduct, setNewProduct] = useState({ name: '', shop: '', category: '', price: '', downPayment: '', stock: '', status: 'active', sku: '' })
+  const [newOrder, setNewOrder] = useState({ customer: '', totalAmount: '', monthlyAmount: '', duration: '', status: 'active' })
   const [platformSettings, setPlatformSettings] = useState({
     platformName: 'FlexiBerry',
     supportEmail: 'support@flexiberry.com',
@@ -144,6 +152,27 @@ export default function Dashboard() {
   ])
   const [viewMessageModal, setViewMessageModal] = useState<any>(null)
 
+  const [products, setProducts] = useState([
+    { id: 1, name: 'iPhone 15 Pro Max', shop: 'Electronics Store', category: 'Electronics', price: 199999, downPayment: 49999, stock: 45, status: 'active', sku: 'IPHONE15PM001', featured: true },
+    { id: 2, name: 'Samsung Galaxy S24', shop: 'Tech Solutions', category: 'Electronics', price: 149999, downPayment: 37499, stock: 32, status: 'active', sku: 'SAMS24001', featured: false },
+    { id: 3, name: 'Winter Jacket', shop: 'Fashion Hub', category: 'Fashion', price: 8999, downPayment: 2249, stock: 120, status: 'active', sku: 'WINTJACK001', featured: true },
+    { id: 4, name: 'Leather Sofa', shop: 'Home Goods', category: 'Home & Garden', price: 45000, downPayment: 11250, stock: 8, status: 'draft', sku: 'LEATHERSOFA001', featured: false },
+    { id: 5, name: 'MacBook Pro 16', shop: 'Tech Solutions', category: 'Electronics', price: 349999, downPayment: 87499, stock: 15, status: 'active', sku: 'MACBOOKPRO16', featured: true },
+  ])
+
+  const [orders, setOrders] = useState([
+    { id: 1, orderId: 'ORD-001', customer: 'John Doe', totalAmount: 199999, monthlyAmount: 66666, duration: 3, paidInstallments: 1, nextDueDate: '2024-06-15', status: 'active' },
+    { id: 2, orderId: 'ORD-002', customer: 'Jane Smith', totalAmount: 149999, monthlyAmount: 74999, duration: 2, paidInstallments: 2, nextDueDate: 'Completed', status: 'completed' },
+    { id: 3, orderId: 'ORD-003', customer: 'Mike Johnson', totalAmount: 349999, monthlyAmount: 69999, duration: 5, paidInstallments: 2, nextDueDate: '2024-05-25', status: 'overdue' },
+    { id: 4, orderId: 'ORD-004', customer: 'Sarah Davis', totalAmount: 45000, monthlyAmount: 15000, duration: 3, paidInstallments: 0, nextDueDate: '2024-06-01', status: 'active' },
+  ])
+
+  const [productsSearchTerm, setProductsSearchTerm] = useState('')
+  const [productsCategoryFilter, setProductsCategoryFilter] = useState('All Categories')
+  const [productsStatusFilter, setProductsStatusFilter] = useState('All Status')
+  const [ordersSearchTerm, setOrdersSearchTerm] = useState('')
+  const [ordersStatusFilter, setOrdersStatusFilter] = useState('All Status')
+
   // Analytics data
   const analyticsData = {
     totalProducts: 284,
@@ -171,8 +200,8 @@ export default function Dashboard() {
       title: 'MAIN MENU',
       items: [
         { id: PAGES.DASHBOARD, label: 'Dashboard', icon: <BarChart3 size={18} /> },
-        { id: PAGES.SHOPS, label: 'Products', icon: <ShoppingBag size={18} />, badge: 284 },
-        { id: PAGES.INSTALLMENTS, label: 'Orders', icon: <ShoppingCart size={18} />, badge: 4 },
+        { id: PAGES.PRODUCTS, label: 'Products', icon: <ShoppingBag size={18} />, badge: 284 },
+        { id: PAGES.ORDERS, label: 'Orders', icon: <ShoppingCart size={18} />, badge: 4 },
         { id: PAGES.INSTALLMENTS, label: 'Installments', icon: <FileText size={18} /> },
 	        { id: PAGES.USERS, label: 'Buyers', icon: <Users size={18} /> },
 	        { id: PAGES.USER_HISTORY, label: 'User History', icon: <Activity size={18} /> },
@@ -504,6 +533,287 @@ export default function Dashboard() {
                       ))}
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Products Page */}
+          {currentPage === PAGES.PRODUCTS && (
+            <div className="space-y-8">
+              <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+                <div>
+                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Products Management</h1>
+                  <p className="text-xs text-gray-400 mt-1">Manage all products across your platform</p>
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="relative flex-1 md:flex-none">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                    <input 
+                      type="text" 
+                      placeholder="Search products..." 
+                      value={productsSearchTerm}
+                      onChange={(e) => setProductsSearchTerm(e.target.value)}
+                      className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl pl-10 pr-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500 w-full md:w-64" 
+                    />
+                  </div>
+                  <select 
+                    value={productsCategoryFilter}
+                    onChange={(e) => setProductsCategoryFilter(e.target.value)}
+                    className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option>All Categories</option>
+                    <option>Electronics</option>
+                    <option>Fashion</option>
+                    <option>Home & Garden</option>
+                    <option>Sports</option>
+                  </select>
+                  <select 
+                    value={productsStatusFilter}
+                    onChange={(e) => setProductsStatusFilter(e.target.value)}
+                    className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option>All Status</option>
+                    <option>active</option>
+                    <option>draft</option>
+                  </select>
+                  <button 
+                    onClick={() => setShowAddProductModal(true)}
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-blue-500/20 hover:scale-[1.02] transition-all"
+                  >
+                    <Plus size={16} />
+                    Add Product
+                  </button>
+                </div>
+              </div>
+
+              <div className="glass-card rounded-3xl overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-gray-100 dark:border-gray-800">
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Product Name</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Shop/Vendor</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Category</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Price</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Down Payment</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Stock</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Status</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50 dark:divide-gray-800/50">
+                      {products
+                        .filter(p => 
+                          (p.name.toLowerCase().includes(productsSearchTerm.toLowerCase()) || p.shop.toLowerCase().includes(productsSearchTerm.toLowerCase())) &&
+                          (productsCategoryFilter === 'All Categories' || p.category === productsCategoryFilter) &&
+                          (productsStatusFilter === 'All Status' || p.status === productsStatusFilter)
+                        )
+                        .map((product) => (
+                        <tr key={product.id} className="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-[10px] font-bold">
+                                {product.name.charAt(0)}
+                              </div>
+                              <div className="text-[11px] font-bold text-gray-900 dark:text-white">{product.name}</div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-[11px] text-gray-500 dark:text-gray-400">{product.shop}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-[11px] text-gray-500 dark:text-gray-400">{product.category}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-[11px] font-bold text-gray-900 dark:text-white">Rs {product.price.toLocaleString()}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-[11px] font-bold text-gray-900 dark:text-white">Rs {product.downPayment.toLocaleString()}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-[11px] font-bold text-gray-900 dark:text-white">{product.stock}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded-lg text-[9px] font-bold ${
+                              product.status === 'active' 
+                                ? 'bg-green-100 text-green-600 dark:bg-green-500/10' 
+                                : 'bg-amber-100 text-amber-600 dark:bg-amber-500/10'
+                            }`}>
+                              {product.status.toUpperCase()}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center justify-end gap-2">
+                              <button 
+                                onClick={() => setShowEditProductModal(product)}
+                                className="p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-500/10 text-blue-600 transition-all"
+                                title="Edit"
+                              >
+                                <Edit2 size={14} />
+                              </button>
+                              <button 
+                                onClick={() => setProducts(products.map(p => p.id === product.id ? { ...p, featured: !p.featured } : p))}
+                                className={`p-2 rounded-lg transition-all ${
+                                  product.featured 
+                                    ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-600' 
+                                    : 'hover:bg-amber-50 dark:hover:bg-amber-500/10 text-gray-400'
+                                }`}
+                                title="Toggle Featured"
+                              >
+                                <Star size={14} fill={product.featured ? 'currentColor' : 'none'} />
+                              </button>
+                              <button 
+                                onClick={() => setProducts(products.filter(p => p.id !== product.id))}
+                                className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-red-600 transition-all"
+                                title="Delete"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Orders Page */}
+          {currentPage === PAGES.ORDERS && (
+            <div className="space-y-8">
+              <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+                <div>
+                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Orders Management</h1>
+                  <p className="text-xs text-gray-400 mt-1">Monitor and manage all customer orders</p>
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="relative flex-1 md:flex-none">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                    <input 
+                      type="text" 
+                      placeholder="Search orders..." 
+                      value={ordersSearchTerm}
+                      onChange={(e) => setOrdersSearchTerm(e.target.value)}
+                      className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl pl-10 pr-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500 w-full md:w-64" 
+                    />
+                  </div>
+                  <select 
+                    value={ordersStatusFilter}
+                    onChange={(e) => setOrdersStatusFilter(e.target.value)}
+                    className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option>All Status</option>
+                    <option>active</option>
+                    <option>completed</option>
+                    <option>overdue</option>
+                  </select>
+                  <button 
+                    onClick={() => setShowAddOrderModal(true)}
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-blue-500/20 hover:scale-[1.02] transition-all"
+                  >
+                    <Plus size={16} />
+                    Add Order
+                  </button>
+                </div>
+              </div>
+
+              <div className="glass-card rounded-3xl overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-gray-100 dark:border-gray-800">
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Order ID</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Customer</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Total Amount</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Monthly Amount</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Duration</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Paid</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Next Due</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Status</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50 dark:divide-gray-800/50">
+                      {orders
+                        .filter(o => 
+                          (o.orderId.toLowerCase().includes(ordersSearchTerm.toLowerCase()) || o.customer.toLowerCase().includes(ordersSearchTerm.toLowerCase())) &&
+                          (ordersStatusFilter === 'All Status' || o.status === ordersStatusFilter)
+                        )
+                        .map((order) => (
+                        <tr key={order.id} className={`hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors ${
+                          order.status === 'overdue' ? 'bg-red-50/30 dark:bg-red-500/5' : ''
+                        }`}>
+                          <td className="px-6 py-4">
+                            <div className="text-[11px] font-bold text-gray-900 dark:text-white">{order.orderId}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-teal-500 flex items-center justify-center text-white text-[10px] font-bold">
+                                {order.customer.charAt(0)}
+                              </div>
+                              <div className="text-[11px] font-bold text-gray-900 dark:text-white">{order.customer}</div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-[11px] font-bold text-gray-900 dark:text-white">Rs {order.totalAmount.toLocaleString()}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-[11px] text-gray-500 dark:text-gray-400">Rs {order.monthlyAmount.toLocaleString()}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-[11px] font-bold text-gray-900 dark:text-white">{order.duration} months</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-[11px] font-bold text-gray-900 dark:text-white">{order.paidInstallments}/{order.duration}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-[11px] text-gray-500 dark:text-gray-400">{order.nextDueDate}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded-lg text-[9px] font-bold ${
+                              order.status === 'active' 
+                                ? 'bg-blue-100 text-blue-600 dark:bg-blue-500/10' 
+                                : order.status === 'completed'
+                                ? 'bg-green-100 text-green-600 dark:bg-green-500/10'
+                                : 'bg-red-100 text-red-600 dark:bg-red-500/10'
+                            }`}>
+                              {order.status.toUpperCase()}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center justify-end gap-2">
+                              <button 
+                                onClick={() => setShowOrderDetailsModal(order)}
+                                className="p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-500/10 text-blue-600 transition-all"
+                                title="View Details"
+                              >
+                                <Eye size={14} />
+                              </button>
+                              {order.status === 'active' && (
+                                <button 
+                                  onClick={() => setOrders(orders.map(o => o.id === order.id ? { ...o, paidInstallments: Math.min(o.paidInstallments + 1, o.duration) } : o))}
+                                  className="p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-500/10 text-green-600 transition-all"
+                                  title="Mark as Paid"
+                                >
+                                  <Check size={14} />
+                                </button>
+                              )}
+                              <button 
+                                onClick={() => setOrders(orders.filter(o => o.id !== order.id))}
+                                className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-red-600 transition-all"
+                                title="Delete"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
@@ -1855,6 +2165,206 @@ export default function Dashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add/Edit Product Modal */}
+      {(showAddProductModal || showEditProductModal) && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="glass-card w-full max-w-2xl rounded-3xl overflow-hidden animate-in fade-in zoom-in duration-300">
+            <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">{showEditProductModal ? 'Edit Product' : 'Add New Product'}</h3>
+              <button onClick={() => { setShowAddProductModal(false); setShowEditProductModal(null); }} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 text-gray-400 transition-all">
+                <X size={20} />
+              </button>
+            </div>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              if (showEditProductModal) {
+                setProducts(products.map(p => p.id === showEditProductModal.id ? showEditProductModal : p));
+                setShowEditProductModal(null);
+              } else {
+                setProducts([...products, { ...newProduct, id: Math.max(...products.map(p => p.id), 0) + 1 }]);
+                setNewProduct({ name: '', shop: '', category: '', price: '', downPayment: '', stock: '', status: 'active', sku: '' });
+                setShowAddProductModal(false);
+              }
+            }} className="p-8 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Product Name</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={showEditProductModal ? showEditProductModal.name : newProduct.name}
+                    onChange={(e) => showEditProductModal ? setShowEditProductModal({...showEditProductModal, name: e.target.value}) : setNewProduct({...newProduct, name: e.target.value})}
+                    className="w-full mt-1 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500" 
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Shop/Vendor</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={showEditProductModal ? showEditProductModal.shop : newProduct.shop}
+                    onChange={(e) => showEditProductModal ? setShowEditProductModal({...showEditProductModal, shop: e.target.value}) : setNewProduct({...newProduct, shop: e.target.value})}
+                    className="w-full mt-1 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500" 
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Category</label>
+                  <select 
+                    required
+                    value={showEditProductModal ? showEditProductModal.category : newProduct.category}
+                    onChange={(e) => showEditProductModal ? setShowEditProductModal({...showEditProductModal, category: e.target.value}) : setNewProduct({...newProduct, category: e.target.value})}
+                    className="w-full mt-1 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select Category</option>
+                    <option>Electronics</option>
+                    <option>Fashion</option>
+                    <option>Home & Garden</option>
+                    <option>Sports</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">SKU</label>
+                  <input 
+                    type="text" 
+                    required
+                    value={showEditProductModal ? showEditProductModal.sku : newProduct.sku}
+                    onChange={(e) => showEditProductModal ? setShowEditProductModal({...showEditProductModal, sku: e.target.value}) : setNewProduct({...newProduct, sku: e.target.value})}
+                    className="w-full mt-1 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500" 
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Price (Rs)</label>
+                  <input 
+                    type="number" 
+                    required
+                    value={showEditProductModal ? showEditProductModal.price : newProduct.price}
+                    onChange={(e) => showEditProductModal ? setShowEditProductModal({...showEditProductModal, price: e.target.value}) : setNewProduct({...newProduct, price: e.target.value})}
+                    className="w-full mt-1 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500" 
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Down Payment (Rs)</label>
+                  <input 
+                    type="number" 
+                    required
+                    value={showEditProductModal ? showEditProductModal.downPayment : newProduct.downPayment}
+                    onChange={(e) => showEditProductModal ? setShowEditProductModal({...showEditProductModal, downPayment: e.target.value}) : setNewProduct({...newProduct, downPayment: e.target.value})}
+                    className="w-full mt-1 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500" 
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Stock</label>
+                  <input 
+                    type="number" 
+                    required
+                    value={showEditProductModal ? showEditProductModal.stock : newProduct.stock}
+                    onChange={(e) => showEditProductModal ? setShowEditProductModal({...showEditProductModal, stock: e.target.value}) : setNewProduct({...newProduct, stock: e.target.value})}
+                    className="w-full mt-1 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500" 
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Status</label>
+                  <select 
+                    value={showEditProductModal ? showEditProductModal.status : newProduct.status}
+                    onChange={(e) => showEditProductModal ? setShowEditProductModal({...showEditProductModal, status: e.target.value}) : setNewProduct({...newProduct, status: e.target.value})}
+                    className="w-full mt-1 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="active">Active</option>
+                    <option value="draft">Draft</option>
+                  </select>
+                </div>
+              </div>
+              <div className="pt-4">
+                <button 
+                  type="submit"
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-bold shadow-lg shadow-blue-500/20 hover:scale-[1.02] transition-all"
+                >
+                  {showEditProductModal ? 'Update Product' : 'Add Product'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Order Details Modal */}
+      {showOrderDetailsModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="glass-card w-full max-w-2xl rounded-3xl overflow-hidden animate-in fade-in zoom-in duration-300">
+            <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Order Details</h3>
+              <button onClick={() => setShowOrderDetailsModal(null)} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 text-gray-400 transition-all">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-8 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Order ID</label>
+                  <div className="mt-1 text-sm font-bold text-gray-900 dark:text-white">{showOrderDetailsModal.orderId}</div>
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Customer</label>
+                  <div className="mt-1 text-sm font-bold text-gray-900 dark:text-white">{showOrderDetailsModal.customer}</div>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Total Amount</label>
+                  <div className="mt-1 text-sm font-bold text-gray-900 dark:text-white">Rs {showOrderDetailsModal.totalAmount.toLocaleString()}</div>
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Monthly Amount</label>
+                  <div className="mt-1 text-sm font-bold text-gray-900 dark:text-white">Rs {showOrderDetailsModal.monthlyAmount.toLocaleString()}</div>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Duration</label>
+                  <div className="mt-1 text-sm font-bold text-gray-900 dark:text-white">{showOrderDetailsModal.duration} months</div>
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Paid Installments</label>
+                  <div className="mt-1 text-sm font-bold text-gray-900 dark:text-white">{showOrderDetailsModal.paidInstallments}/{showOrderDetailsModal.duration}</div>
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Status</label>
+                  <div className="mt-1">
+                    <span className={`px-2 py-1 rounded-lg text-[9px] font-bold ${
+                      showOrderDetailsModal.status === 'active' 
+                        ? 'bg-blue-100 text-blue-600 dark:bg-blue-500/10' 
+                        : showOrderDetailsModal.status === 'completed'
+                        ? 'bg-green-100 text-green-600 dark:bg-green-500/10'
+                        : 'bg-red-100 text-red-600 dark:bg-red-500/10'
+                    }`}>
+                      {showOrderDetailsModal.status.toUpperCase()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Next Due Date</label>
+                <div className="mt-1 text-sm font-bold text-gray-900 dark:text-white">{showOrderDetailsModal.nextDueDate}</div>
+              </div>
+            </div>
+            <div className="p-6 border-t border-gray-100 dark:border-gray-800 flex justify-end">
+              <button 
+                onClick={() => setShowOrderDetailsModal(null)}
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-bold shadow-lg shadow-blue-500/20 hover:scale-[1.02] transition-all"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
