@@ -1227,8 +1227,335 @@ export default function Dashboard() {
             </div>
           )}
 
+          {/* Buyers Page */}
+          {currentPage === PAGES.USERS && (
+            <div className="space-y-8">
+              <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+                <div>
+                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Buyers Management</h1>
+                  <p className="text-xs text-gray-400 mt-1">Manage and monitor all platform buyers</p>
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="relative flex-1 md:flex-none">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                    <input 
+                      type="text" 
+                      placeholder="Search buyers..." 
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl pl-10 pr-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500 w-full md:w-64" 
+                    />
+                  </div>
+                  <button 
+                    onClick={() => setShowAddUserModal(true)}
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg shadow-blue-500/20 hover:scale-[1.02] transition-all"
+                  >
+                    <Plus size={16} />
+                    Add Buyer
+                  </button>
+                </div>
+              </div>
+
+              <div className="glass-card rounded-3xl overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="border-b border-gray-100 dark:border-gray-800">
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Buyer Name</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Email</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Phone</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Status</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Joined Date</th>
+                        <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50 dark:divide-gray-800/50">
+                      {users
+                        .filter(user => 
+                          user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          user.email.toLowerCase().includes(searchTerm.toLowerCase())
+                        )
+                        .map((user) => (
+                        <tr key={user.id} className="hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-[10px] font-bold">
+                                {user.name.charAt(0)}
+                              </div>
+                              <div className="text-[11px] font-bold text-gray-900 dark:text-white">{user.name}</div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-[11px] text-gray-500 dark:text-gray-400">{user.email}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-[11px] text-gray-500 dark:text-gray-400">{user.phone}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded-lg text-[9px] font-bold ${
+                              user.status === 'active' 
+                                ? 'bg-green-100 text-green-600 dark:bg-green-500/10' 
+                                : 'bg-red-100 text-red-600 dark:bg-red-500/10'
+                            }`}>
+                              {user.status.toUpperCase()}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-[11px] text-gray-500 dark:text-gray-400">{user.joined}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center justify-end gap-2">
+                              <button 
+                                onClick={() => setShowEditUserModal(user)}
+                                className="p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-500/10 text-blue-600 transition-all"
+                                title="Edit"
+                              >
+                                <Edit2 size={14} />
+                              </button>
+                              <button 
+                                onClick={() => {
+                                  if (confirm('Are you sure you want to delete this buyer?')) {
+                                    setUsers(users.filter(u => u.id !== user.id));
+                                  }
+                                }}
+                                className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-red-600 transition-all"
+                                title="Delete"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Settings Page */}
+          {currentPage === PAGES.SETTINGS && (
+            <div className="space-y-8">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Platform Settings</h1>
+                <p className="text-xs text-gray-400 mt-1">Manage platform-wide configuration and preferences</p>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Main Settings Content */}
+                <div className="lg:col-span-2 space-y-6">
+                  {/* General Settings */}
+                  <div className="glass-card p-8 rounded-3xl">
+                    <div className="mb-6 pb-6 border-b border-gray-100 dark:border-gray-800">
+                      <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <span className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600">⚙️</span>
+                        General Settings
+                      </h2>
+                      <p className="text-xs text-gray-400 mt-1">Configure basic platform information</p>
+                    </div>
+                    <div className="space-y-6">
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Platform Name</label>
+                        <input 
+                          type="text" 
+                          value={platformSettings.platformName}
+                          onChange={(e) => setPlatformSettings({...platformSettings, platformName: e.target.value})}
+                          className="w-full mt-2 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500" 
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Support Email</label>
+                        <input 
+                          type="email" 
+                          value={platformSettings.supportEmail}
+                          onChange={(e) => setPlatformSettings({...platformSettings, supportEmail: e.target.value})}
+                          className="w-full mt-2 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500" 
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Contact Number</label>
+                        <input 
+                          type="tel" 
+                          value={platformSettings.contactNumber}
+                          onChange={(e) => setPlatformSettings({...platformSettings, contactNumber: e.target.value})}
+                          className="w-full mt-2 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500" 
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Commerce Settings */}
+                  <div className="glass-card p-8 rounded-3xl">
+                    <div className="mb-6 pb-6 border-b border-gray-100 dark:border-gray-800">
+                      <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <span className="w-8 h-8 rounded-lg bg-green-50 dark:bg-green-500/10 flex items-center justify-center text-green-600">💳</span>
+                        Commerce Settings
+                      </h2>
+                      <p className="text-xs text-gray-400 mt-1">Configure payment and commerce options</p>
+                    </div>
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Commission Rate (%)</label>
+                          <input 
+                            type="text" 
+                            value={platformSettings.commissionRate}
+                            onChange={(e) => setPlatformSettings({...platformSettings, commissionRate: e.target.value})}
+                            className="w-full mt-2 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500" 
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Tax Rate (%)</label>
+                          <input 
+                            type="text" 
+                            value={platformSettings.taxRate}
+                            onChange={(e) => setPlatformSettings({...platformSettings, taxRate: e.target.value})}
+                            className="w-full mt-2 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500" 
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Currency</label>
+                        <select 
+                          value={platformSettings.currency}
+                          onChange={(e) => setPlatformSettings({...platformSettings, currency: e.target.value})}
+                          className="w-full mt-2 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option>PKR</option>
+                          <option>USD</option>
+                          <option>EUR</option>
+                          <option>GBP</option>
+                          <option>AED</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Security Settings */}
+                  <div className="glass-card p-8 rounded-3xl">
+                    <div className="mb-6 pb-6 border-b border-gray-100 dark:border-gray-800">
+                      <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <span className="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center text-purple-600">🔒</span>
+                        Security Settings
+                      </h2>
+                      <p className="text-xs text-gray-400 mt-1">Configure security and authentication options</p>
+                    </div>
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800">
+                        <div>
+                          <p className="text-sm font-bold text-gray-900 dark:text-white">Two-Factor Authentication</p>
+                          <p className="text-xs text-gray-500 mt-1">Require 2FA for all admin accounts</p>
+                        </div>
+                        <button 
+                          onClick={() => setPlatformSettings({...platformSettings, twoFactorAuth: !platformSettings.twoFactorAuth})}
+                          className={`relative inline-flex h-8 w-14 items-center rounded-full transition-all ${
+                            platformSettings.twoFactorAuth 
+                              ? 'bg-green-500' 
+                              : 'bg-gray-300 dark:bg-gray-600'
+                          }`}
+                        >
+                          <span className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                            platformSettings.twoFactorAuth ? 'translate-x-7' : 'translate-x-1'
+                          }`} />
+                        </button>
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Password Policy</label>
+                        <select 
+                          className="w-full mt-2 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                          <option>Strong (12+ chars, mixed case, numbers, symbols)</option>
+                          <option>Medium (8+ chars, mixed case, numbers)</option>
+                          <option>Basic (6+ chars)</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Maintenance Settings */}
+                  <div className="glass-card p-8 rounded-3xl">
+                    <div className="mb-6 pb-6 border-b border-gray-100 dark:border-gray-800">
+                      <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <span className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-600">🔧</span>
+                        Maintenance Settings
+                      </h2>
+                      <p className="text-xs text-gray-400 mt-1">Configure system maintenance and cache options</p>
+                    </div>
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800">
+                        <div>
+                          <p className="text-sm font-bold text-gray-900 dark:text-white">Maintenance Mode</p>
+                          <p className="text-xs text-gray-500 mt-1">Take platform offline for maintenance</p>
+                        </div>
+                        <button 
+                          onClick={() => setPlatformSettings({...platformSettings, maintenanceMode: !platformSettings.maintenanceMode})}
+                          className={`relative inline-flex h-8 w-14 items-center rounded-full transition-all ${
+                            platformSettings.maintenanceMode 
+                              ? 'bg-red-500' 
+                              : 'bg-gray-300 dark:bg-gray-600'
+                          }`}
+                        >
+                          <span className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                            platformSettings.maintenanceMode ? 'translate-x-7' : 'translate-x-1'
+                          }`} />
+                        </button>
+                      </div>
+                      <button className="w-full px-4 py-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 text-amber-600 dark:text-amber-400 text-sm font-bold hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-all">
+                        Clear Cache
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Settings Sidebar */}
+                <div className="space-y-6">
+                  {/* Quick Info */}
+                  <div className="glass-card p-6 rounded-3xl">
+                    <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">Configuration Status</h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-500">General Settings</span>
+                        <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-500">Commerce Settings</span>
+                        <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-500">Security Settings</span>
+                        <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-500">Maintenance Settings</span>
+                        <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Save Button */}
+                  <button className="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-bold shadow-lg shadow-blue-500/20 hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
+                    <Save size={16} />
+                    Save All Changes
+                  </button>
+
+                  {/* Info Box */}
+                  <div className="glass-card p-6 rounded-3xl border border-blue-100 dark:border-blue-500/20">
+                    <div className="flex gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 shrink-0 text-lg">ℹ️</div>
+                      <div>
+                        <p className="text-xs font-bold text-gray-900 dark:text-white">Important</p>
+                        <p className="text-xs text-gray-500 mt-1">Changes to security settings will take effect immediately. Please ensure you have proper backup before making critical changes.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Other pages would go here, following the same pattern */}
-          {currentPage !== PAGES.DASHBOARD && currentPage !== PAGES.ANALYTICS && currentPage !== PAGES.CONTACT_MESSAGES && currentPage !== PAGES.BUYER_KYC && currentPage !== PAGES.VENDOR_KYC && (
+          {currentPage !== PAGES.DASHBOARD && currentPage !== PAGES.ANALYTICS && currentPage !== PAGES.CONTACT_MESSAGES && currentPage !== PAGES.BUYER_KYC && currentPage !== PAGES.VENDOR_KYC && currentPage !== PAGES.USERS && currentPage !== PAGES.SETTINGS && (
             <div className="glass-card p-6 md:p-12 rounded-3xl min-h-[400px] md:min-h-[600px] flex flex-col items-center justify-center text-center">
               <div className="w-16 h-16 md:w-20 md:h-20 rounded-3xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 mb-6">
                 <Activity size={32} className="md:size-10" />
@@ -1367,6 +1694,156 @@ export default function Dashboard() {
                 >
                   <option>active</option>
                   <option>inactive</option>
+                </select>
+              </div>
+              <div className="pt-4">
+                <button 
+                  type="submit"
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-bold shadow-lg shadow-blue-500/20 hover:scale-[1.02] transition-all"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add User Modal */}
+      {showAddUserModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="glass-card w-full max-w-md rounded-3xl overflow-hidden animate-in fade-in zoom-in duration-300">
+            <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Add New Buyer</h3>
+              <button onClick={() => setShowAddUserModal(false)} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 text-gray-400 transition-all">
+                <X size={20} />
+              </button>
+            </div>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const newUserData = {
+                id: users.length + 1,
+                name: newUser.name,
+                email: newUser.email,
+                phone: newUser.phone,
+                status: newUser.status,
+                joined: new Date().toISOString().split('T')[0]
+              };
+              setUsers([...users, newUserData]);
+              setShowAddUserModal(false);
+              setNewUser({ name: '', email: '', phone: '', status: 'active' });
+            }} className="p-8 space-y-4">
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Full Name</label>
+                <input 
+                  type="text" 
+                  required
+                  value={newUser.name}
+                  onChange={(e) => setNewUser({...newUser, name: e.target.value})}
+                  className="w-full mt-1 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500" 
+                  placeholder="John Doe"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Email Address</label>
+                <input 
+                  type="email" 
+                  required
+                  value={newUser.email}
+                  onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                  className="w-full mt-1 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500" 
+                  placeholder="john@email.com"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Phone Number</label>
+                <input 
+                  type="tel" 
+                  required
+                  value={newUser.phone}
+                  onChange={(e) => setNewUser({...newUser, phone: e.target.value})}
+                  className="w-full mt-1 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500" 
+                  placeholder="+1-555-0001"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Status</label>
+                <select 
+                  value={newUser.status}
+                  onChange={(e) => setNewUser({...newUser, status: e.target.value})}
+                  className="w-full mt-1 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="active">Active</option>
+                  <option value="suspended">Suspended</option>
+                </select>
+              </div>
+              <div className="pt-4">
+                <button 
+                  type="submit"
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-bold shadow-lg shadow-blue-500/20 hover:scale-[1.02] transition-all"
+                >
+                  Add Buyer Account
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit User Modal */}
+      {showEditUserModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="glass-card w-full max-w-md rounded-3xl overflow-hidden animate-in fade-in zoom-in duration-300">
+            <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Edit Buyer</h3>
+              <button onClick={() => setShowEditUserModal(null)} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 text-gray-400 transition-all">
+                <X size={20} />
+              </button>
+            </div>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              setUsers(users.map(u => u.id === showEditUserModal.id ? showEditUserModal : u));
+              setShowEditUserModal(null);
+            }} className="p-8 space-y-4">
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Full Name</label>
+                <input 
+                  type="text" 
+                  required
+                  value={showEditUserModal.name}
+                  onChange={(e) => setShowEditUserModal({...showEditUserModal, name: e.target.value})}
+                  className="w-full mt-1 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500" 
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Email Address</label>
+                <input 
+                  type="email" 
+                  required
+                  value={showEditUserModal.email}
+                  onChange={(e) => setShowEditUserModal({...showEditUserModal, email: e.target.value})}
+                  className="w-full mt-1 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500" 
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Phone Number</label>
+                <input 
+                  type="tel" 
+                  required
+                  value={showEditUserModal.phone}
+                  onChange={(e) => setShowEditUserModal({...showEditUserModal, phone: e.target.value})}
+                  className="w-full mt-1 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500" 
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Status</label>
+                <select 
+                  value={showEditUserModal.status}
+                  onChange={(e) => setShowEditUserModal({...showEditUserModal, status: e.target.value})}
+                  className="w-full mt-1 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="active">Active</option>
+                  <option value="suspended">Suspended</option>
                 </select>
               </div>
               <div className="pt-4">
